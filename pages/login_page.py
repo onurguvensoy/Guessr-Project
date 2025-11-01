@@ -1,65 +1,76 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import ttk, messagebox
 from database.db_manager import DatabaseManager
 
 db = DatabaseManager()
 
+
 class LoginPage(tk.Frame):
     def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
+        tk.Frame.__init__(self, parent, bg='#4B0082')
         self.controller = controller
-        self.configure(bg='#1E90FF')
-        
-        # Title
-        title = tk.Label(self, 
-                        text="Login",
-                        font=('Helvetica', 24, 'bold'),
-                        bg='#1E90FF',
-                        fg='white')
+
+        style = ttk.Style()
+        style.layout("Rounded.TButton",
+                     [('Button.focus',
+                       {'children': [('Button.padding',
+                                      {'children': [('Button.label', {'sticky': 'nswe'})],
+                                       'sticky': 'nswe'})],
+                        'sticky': 'nswe'})])
+        style.configure('Rounded.TButton',
+                        font=("Impact", 18),
+                        background='white',
+                        foreground='black',
+                        padding=15,
+                        borderwidth=0,
+                        relief="flat",
+                        focusthickness=0,
+                        anchor="center",
+                        bordercolor='white')
+        style.map('Rounded.TButton',
+                  foreground=[('disabled', 'gray'), ('active', 'black')],
+                  background=[('disabled', '#E0E0E0'), ('active', '#CCCCCC')],
+                  relief=[('pressed', 'flat'), ('!pressed', 'flat')])
+
+        title = tk.Label(self,
+                         text="Login",
+                         font=('Impact', 36, 'bold'),
+                         bg='#9370DB',
+                         fg='white',
+                         bd=0,
+                         relief=tk.FLAT,
+                         padx=20,
+                         pady=10)
         title.pack(pady=50)
-        
-        # Username
-        tk.Label(self, text="Username:", bg='#1E90FF', fg='white').pack(pady=5)
+
+        tk.Label(self, text="Username:", bg='#4B0082', fg='white', font=('Impact', 14)).pack(pady=5)
         self.username_entry = tk.Entry(self)
         self.username_entry.pack(pady=5)
-        
-        # Password
-        tk.Label(self, text="Password:", bg='#1E90FF', fg='white').pack(pady=5)
+
+        tk.Label(self, text="Password:", bg='#4B0082', fg='white', font=('Impact', 14)).pack(pady=5)
         self.password_entry = tk.Entry(self, show="*")
         self.password_entry.pack(pady=5)
-        
-        # Login Button
-        login_button = tk.Button(
+
+        login_button = ttk.Button(
             self,
             text="Login",
-            bg='#FFD700',
-            fg='#000000',
-            activebackground='#FFA500',
-            font=('Helvetica', 12, 'bold'),
+            style='Rounded.TButton',
             command=self.handle_login
         )
         login_button.pack(pady=10)
-        
-        # Register Button
-        register_button = tk.Button(
+
+        register_button = ttk.Button(
             self,
             text="Register",
-            bg='#FFD700',
-            fg='#000000',
-            activebackground='#FFA500',
-            font=('Helvetica', 12, 'bold'),
+            style='Rounded.TButton',
             command=lambda: controller.show_frame("RegisterPage")
         )
         register_button.pack(pady=10)
-        
-        # Back Button
-        back_button = tk.Button(
+
+        back_button = ttk.Button(
             self,
             text="Back",
-            bg='#FFD700',
-            fg='#000000',
-            activebackground='#FFA500',
-            font=('Helvetica', 12, 'bold'),
+            style='Rounded.TButton',
             command=lambda: controller.show_frame("HomePage")
         )
         back_button.pack(pady=10)
@@ -67,11 +78,11 @@ class LoginPage(tk.Frame):
     def handle_login(self):
         username = self.username_entry.get().strip()
         password = self.password_entry.get().strip()
-        
+
         if not username or not password:
             messagebox.showerror("Login Failed", "Please fill in all fields.")
             return
-        
+
         user = db.verify_user(username, password)
         if user:
             messagebox.showinfo("Login Successful", f"Welcome, {user['username']}!")
