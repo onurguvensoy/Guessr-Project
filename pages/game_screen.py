@@ -5,7 +5,7 @@ import requests
 import io
 import math
 from database.db_manager import DatabaseManager
-
+from client.utils.constants import API_KEY
 class GameScreen(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent, bg='#4B0082')
@@ -16,8 +16,8 @@ class GameScreen(tk.Frame):
         self.TOTAL_ROUNDS = 5
         
         # API Keys (replace with your actual keys)
-        self.STREET_VIEW_KEY = "AIzaSyCdSDsJTF4IeUKY8QKgoKrVqSRol0HJg1w"
-        self.MAPS_KEY = "AIzaSyCdSDsJTF4IeUKY8QKgoKrVqSRol0HJg1w"
+        self.STREET_VIEW_KEY = API_KEY
+        self.MAPS_KEY = API_KEY
 
         # Game layout
         self.setup_layout()
