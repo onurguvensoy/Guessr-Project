@@ -1,2 +1,20 @@
-client/utils/constants.py
-client/db/user_database.db 
+# venv
+.venv/
+
+# python cache
+__pycache__/
+*.pyc
+
+# ide
+.idea/
+.vscode/
+
+# env / secrets
+.env
+
+# db
+*.db
+database/*.db
+
+# logs
+*.log

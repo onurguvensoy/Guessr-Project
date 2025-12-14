@@ -1,159 +1,117 @@
-import tkinter as tk
-from tkinter import ttk
-from PIL import Image, ImageTk
-import requests
-import io
+import os
+import random
 import math
-from database.db_manager import DatabaseManager
-from client.utils.constants import API_KEY
+import tkinter as tk
+from tkinter import messagebox
+
+try:
+    import webview
+except ImportError:
+    webview = None
+
+
+COORDS = [
+    (41.0082, 28.9784),   # İstanbul
+    (48.8584, 2.2945),    # Eiffel
+    (40.6892, -74.0445),  # Statue of Liberty
+]
+
+def haversine_km(lat1, lon1, lat2, lon2):
+    R = 6371.0
+    p = math.pi / 180.0
+    dlat = (lat2 - lat1) * p
+    dlon = (lon2 - lon1) * p
+    a = (math.sin(dlat/2)**2 +
+         math.cos(lat1*p)*math.cos(lat2*p)*math.sin(dlon/2)**2)
+    return 2 * R * math.asin(math.sqrt(a))
+
+
+class GameApi:
+    def __init__(self):
+        self.target = random.choice(COORDS)
+
+    def get_target(self):
+        return {"lat": self.target[0], "lng": self.target[1]}
+
+    def submit_guess(self, lat, lng):
+        dist_km = haversine_km(self.target[0], self.target[1], lat, lng)
+        score = max(0, int(5000 - dist_km * 50))
+        return {"distance_km": dist_km, "score": score, "target": self.get_target()}
+
+
+def open_game_window():
+    if webview is None:
+        messagebox.showerror(
+            "Eksik Paket",
+            "pywebview kurulu değil.\n\nTerminalde şunu çalıştır:\n\npip install pywebview"
+        )
+        return
+
+    api = GameApi()
+
+    # pages/ içinden proje köküne çıkıp web/game.html buluyoruz
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    html_path = os.path.join(base_dir, "web", "game.html")
+
+    if not os.path.exists(html_path):
+        messagebox.showerror(
+            "Dosya bulunamadı",
+            f"Bulunamadı:\n{html_path}\n\nweb/game.html oluşturduğundan emin ol."
+        )
+        return
+
+    webview.create_window(
+        "Guessr Game",
+        html_path,
+        js_api=api,
+        width=1200,
+        height=800
+    )
+    webview.start()
+
+
 class GameScreen(tk.Frame):
     def __init__(self, parent, controller):
-        super().__init__(parent, bg='#4B0082')
+        super().__init__(parent, bg="#4B0082")
         self.controller = controller
-        self.db = DatabaseManager()
-        self.current_round = 1
-        self.total_score = 0
-        self.TOTAL_ROUNDS = 5
-        
-        # API Keys (replace with your actual keys)
-        self.STREET_VIEW_KEY = API_KEY
-        self.MAPS_KEY = API_KEY
 
-        # Game layout
-        self.setup_layout()
-        self.setup_street_view()
-        self.setup_map()
-        self.setup_game_info()
-
-    def setup_layout(self):
-        # Main frame for street view
-        self.street_view_frame = tk.Frame(self, bg='black', width=600, height=400)
-        self.street_view_frame.pack(pady=20)
-        self.street_view_frame.pack_propagate(False)
-
-        # Mini-map frame (starts small, expands on hover)
-        self.map_frame = tk.Frame(self, bg='white', width=200, height=200)
-        self.map_frame.pack(side='right', padx=20, pady=20)
-        self.map_frame.pack_propagate(False)
-
-        # Game info frame
-        self.info_frame = tk.Frame(self, bg='#4B0082')
-        self.info_frame.pack(side='left', padx=20)
-
-    def setup_street_view(self):
-        # Example location (will be random in actual game)
-        location = self.get_random_location()
-        
-        # Get Street View image
-        url = f"https://maps.googleapis.com/maps/api/streetview?size=600x400&location={location['lat']},{location['lng']}&key={self.STREET_VIEW_KEY}"
-        response = requests.get(url)
-        img = Image.open(io.BytesIO(response.content))
-        photo = ImageTk.PhotoImage(img)
-        
-        self.street_view_label = tk.Label(self.street_view_frame, image=photo)
-        self.street_view_label.image = photo
-        self.street_view_label.pack()
-
-    def setup_map(self):
-        # Initialize map with click handler
-        self.map_canvas = tk.Canvas(self.map_frame, width=200, height=200)
-        self.map_canvas.pack()
-
-        # Load and display world map image
-        # You'll need to implement actual Google Maps integration here
-        
-        # Bind hover events for map expansion
-        self.map_frame.bind('<Enter>', self.expand_map)
-        self.map_frame.bind('<Leave>', self.shrink_map)
-        self.map_canvas.bind('<Button-1>', self.handle_guess)
-
-    def setup_game_info(self):
-        self.round_label = tk.Label(
-            self.info_frame,
-            text=f"Round: {self.current_round}/{self.TOTAL_ROUNDS}",
-            font=('Impact', 16),
-            bg='#4B0082',
-            fg='white'
+        title = tk.Label(
+            self,
+            text="Game Screen",
+            font=("Impact", 36, "bold"),
+            bg="#9370DB",
+            fg="white",
+            bd=0,
+            relief=tk.FLAT,
+            padx=20,
+            pady=10,
         )
-        self.round_label.pack(pady=5)
+        title.pack(pady=30)
 
-        self.score_label = tk.Label(
-            self.info_frame,
-            text=f"Score: {self.total_score}",
-            font=('Impact', 16),
-            bg='#4B0082',
-            fg='white'
+        info = tk.Label(
+            self,
+            text="GeoGuessr modu: Street View + haritadan tahmin",
+            font=("Impact", 16),
+            bg="#4B0082",
+            fg="white",
         )
-        self.score_label.pack(pady=5)
+        info.pack(pady=10)
 
-    def expand_map(self, event):
-        self.map_frame.configure(width=400, height=400)
-        # Update map display
+        btn_style = {
+            "font": ("Impact", 18),
+            "bg": "#9370DB",
+            "fg": "white",
+            "activebackground": "#B57EDC",
+            "activeforeground": "white",
+            "padx": 20,
+            "pady": 10,
+            "bd": 0,
+            "width": 18,
+        }
 
-    def shrink_map(self, event):
-        self.map_frame.configure(width=200, height=200)
-        # Update map display
+        tk.Button(self, text="Start Round", command=open_game_window, **btn_style).pack(pady=10)
+        tk.Button(self, text="Back to Lobby", command=lambda: controller.show_frame("LobbyScreen"), **btn_style).pack(pady=10)
+        tk.Button(self, text="Quit", command=controller.quit, **btn_style).pack(pady=10)
 
-    def handle_guess(self, event):
-        # Convert click coordinates to lat/lng
-        guessed_lat, guessed_lng = self.convert_click_to_coordinates(event.x, event.y)
-        
-        # Calculate distance and score
-        distance = self.calculate_distance(
-            guessed_lat, guessed_lng,
-            self.current_location['lat'],
-            self.current_location['lng']
-        )
-        
-        round_score = self.calculate_score(distance)
-        self.total_score += round_score
-
-        # Show result dialog
-        self.show_round_result(distance, round_score)
-
-        # Move to next round or end game
-        if self.current_round < self.TOTAL_ROUNDS:
-            self.current_round += 1
-            self.start_new_round()
-        else:
-            self.end_game()
-
-    def get_random_location(self):
-        # Get random location from database
-        return {'lat': 0, 'lng': 0}  # Placeholder
-
-    def calculate_distance(self, lat1, lon1, lat2, lon2):
-        # Haversine formula for distance calculation
-        R = 6371  # Earth's radius in km
-        
-        lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
-        dlat = lat2 - lat1
-        dlon = lon2 - lon1
-        
-        a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
-        c = 2 * math.asin(math.sqrt(a))
-        return R * c
-
-    def calculate_score(self, distance):
-        # Score calculation based on distance
-        max_score = 5000
-        if distance < 1:
-            return max_score
-        return int(max_score * math.exp(-distance/2000))
-
-    def show_round_result(self, distance, score):
-        # Show dialog with round results
+    def on_show(self):
         pass
-
-    def start_new_round(self):
-        # Update UI for new round
-        self.current_location = self.get_random_location()
-        self.setup_street_view()
-        self.round_label.config(text=f"Round: {self.current_round}/{self.TOTAL_ROUNDS}")
-        self.score_label.config(text=f"Score: {self.total_score}")
-
-    def end_game(self):
-        # Save score and show final results
-        self.db.save_score(self.controller.current_user, self.total_score)
-        # Show final score dialog
-        self.controller.show_frame("LobbyScreen")

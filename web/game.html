@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Guessr</title>
+  <style>
+    body { margin:0; font-family: Arial; }
+    #root { display:flex; height:100vh; }
+    #pano { flex: 1; }
+    #side { width: 420px; display:flex; flex-direction:column; border-left:1px solid #ddd; }
+    #map { flex:1; }
+    #panel { padding:12px; display:flex; gap:10px; align-items:center; border-top:1px solid #ddd; }
+    button { padding:10px 12px; cursor:pointer; }
+    .small { font-size: 13px; opacity: .8; }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <div id="pano"></div>
+    <div id="side">
+      <div id="map"></div>
+      <div id="panel">
+        <button id="submit">Tahmini Gönder</button>
+        <div>
+          <div id="status">Haritadan bir nokta seç.</div>
+          <div class="small" id="result"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=__API_KEY__"></script>
+
+  <script>
+    let map, pano, guessMarker = null;
+    let guessLatLng = null;
+
+    async function init() {
+      const target = await window.pywebview.api.get_target();
+
+      pano = new google.maps.StreetViewPanorama(document.getElementById("pano"), {
+        position: target,
+        pov: { heading: 0, pitch: 0 },
+        zoom: 1,
+        addressControl: false,
+        fullscreenControl: true
+      });
+
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: {lat: 20, lng: 0},
+        zoom: 2,
+        streetViewControl: false,
+        mapTypeControl: false
+      });
+
+      map.addListener("click", (e) => {
+        guessLatLng = e.latLng;
+        if (!guessMarker) guessMarker = new google.maps.Marker({ map, position: guessLatLng });
+        else guessMarker.setPosition(guessLatLng);
+
+        document.getElementById("status").innerText =
+          `Seçildi: ${guessLatLng.lat().toFixed(5)}, ${guessLatLng.lng().toFixed(5)}`;
+      });
+
+      document.getElementById("submit").addEventListener("click", async () => {
+        if (!guessLatLng) {
+          document.getElementById("status").innerText = "Önce haritadan tıkla!";
+          return;
+        }
+        const res = await window.pywebview.api.submit_guess(guessLatLng.lat(), guessLatLng.lng());
+        document.getElementById("result").innerText =
+          `Mesafe: ${res.distance_km.toFixed(2)} km | Skor: ${res.score}`;
+
+        new google.maps.Marker({ map, position: res.target, label: "H" });
+      });
+    }
+
+    window.addEventListener("pywebviewready", init);
+  </script>
+</body>
+</html>
