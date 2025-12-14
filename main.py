@@ -1,5 +1,4 @@
 import tkinter as tk
-
 from pages.home_page import HomePage
 from pages.login_page import LoginPage
 from pages.register_page import RegisterPage
@@ -15,16 +14,14 @@ class GeoGuessrApp(tk.Tk):
 
         self.title("GeoGuessr Clone")
         self.geometry("800x600")
-        self.minsize(800, 600)
 
-        # Logged-in user state (dict: id/username/email) or None
+        # logged-in user: {"id":..., "username":..., "email":...} veya None
         self.current_user = None
 
         self.container = tk.Frame(self, bg="#1E90FF")
         self.container.pack(side="top", fill="both", expand=True)
         self.container.grid_rowconfigure(0, weight=1)
         self.container.grid_columnconfigure(0, weight=1)
-
         self.configure(bg="#1E90FF")
 
         self.frames = {}
@@ -38,12 +35,10 @@ class GeoGuessrApp(tk.Tk):
 
     def show_frame(self, page_name: str):
         frame = self.frames[page_name]
-        frame.tkraise()
-
-        # Optional lifecycle hook for pages that need refresh when shown
         on_show = getattr(frame, "on_show", None)
         if callable(on_show):
             on_show()
+        frame.tkraise()
 
 
 if __name__ == "__main__":
