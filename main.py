@@ -1,4 +1,5 @@
-import tkinter as tk
+import customtkinter as ctk
+import multiprocessing
 from pages.home_page import HomePage
 from pages.login_page import LoginPage
 from pages.register_page import RegisterPage
@@ -6,26 +7,38 @@ from pages.settings_page import SettingsPage
 from pages.lobby_screen import LobbyScreen
 from pages.profile_page import ProfilePage
 from pages.game_screen import GameScreen
+from utils.sound_manager import SoundManager
+from pages.leaderboard_page import LeaderboardPage
+from pages.create_playlist_page import CreatePlaylistPage
 
+# Global Tema Ayarları
+ctk.set_appearance_mode("dark") 
+ctk.set_default_color_theme("blue")
 
-class GeoGuessrApp(tk.Tk):
+class GeoGuessrApp(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("GeoGuessr Clone")
-        self.geometry("800x600")
+        self.title("HaloNGuessr")
+        self.geometry("900x700")
 
-        # logged-in user: {"id":..., "username":..., "email":...} veya None
+        # --- MERKEZİ DURUM YÖNETİMİ ---
         self.current_user = None
+        self.current_language = "English" # Varsayılan dil
+        
+        # Ses sistemini başlat
+        self.sound_manager = SoundManager()
+        self.sound_manager.play_bg_music()
 
-        self.container = tk.Frame(self, bg="#1E90FF")
+        # --- ANA KONTEYNER ---
+        self.container = ctk.CTkFrame(self)
         self.container.pack(side="top", fill="both", expand=True)
         self.container.grid_rowconfigure(0, weight=1)
         self.container.grid_columnconfigure(0, weight=1)
-        self.configure(bg="#1E90FF")
 
+        # Sayfa Deposu
         self.frames = {}
-        for F in (HomePage, LoginPage, RegisterPage, SettingsPage, LobbyScreen, ProfilePage, GameScreen):
+        for F in (HomePage, LoginPage, RegisterPage, SettingsPage, LobbyScreen, ProfilePage, GameScreen, LeaderboardPage, CreatePlaylistPage):
             page_name = F.__name__
             frame = F(parent=self.container, controller=self)
             self.frames[page_name] = frame
@@ -34,13 +47,35 @@ class GeoGuessrApp(tk.Tk):
         self.show_frame("HomePage")
 
     def show_frame(self, page_name: str):
+        """Sayfayı değiştirir, geçiş sesi çalar ve sayfa hazırlık metodunu tetikler."""
+        # Tıklama sesi efekti
+        self.sound_manager.play_click_sfx()
+        
         frame = self.frames[page_name]
-        on_show = getattr(frame, "on_show", None)
-        if callable(on_show):
-            on_show()
+        
+        # Sayfa gösterilmeden önce verileri yenile (on_show varsa)
+        if hasattr(frame, "on_show") and callable(frame.on_show):
+            frame.on_show()
+            
         frame.tkraise()
+
+    def update_all_languages(self):
+        """Tüm sayfalara dilin değiştiğini bildirir."""
+        for frame in self.frames.values():
+            if hasattr(frame, "update_texts"):
+                frame.update_texts()
+
+    def on_closing(self):
+        """Uygulama kapatılırken müziği durdurur."""
+        self.sound_manager.stop_music()
+        self.destroy()
+
+if __name__ == "__main__":
+    # macOS/Windows için multiprocessing desteğini güvenli hale getirir
+    multiprocessing.freeze_support()
 
 
 if __name__ == "__main__":
     app = GeoGuessrApp()
+    app.protocol("WM_DELETE_WINDOW", app.on_closing)
     app.mainloop()

@@ -1,106 +1,112 @@
-import tkinter as tk
-from tkinter import ttk
+import customtkinter as ctk
+from utils.translation import TRANSLATIONS
 
-
-class HomePage(tk.Frame):
+class HomePage(ctk.CTkFrame):
     def __init__(self, parent, controller):
-        super().__init__(parent, bg="#4B0082")
+        super().__init__(parent)
         self.controller = controller
 
-        style = ttk.Style()
-
-        # Rounded button style (works with most themes; if a theme ignores it, app still runs)
-        style.layout(
-            "Rounded.TButton",
-            [
-                (
-                    "Button.focus",
-                    {
-                        "children": [
-                            (
-                                "Button.padding",
-                                {
-                                    "children": [("Button.label", {"sticky": "nswe"})],
-                                    "sticky": "nswe",
-                                },
-                            )
-                        ],
-                        "sticky": "nswe",
-                    },
-                )
-            ],
-        )
-
-        style.configure(
-            "Rounded.TButton",
-            font=("Impact", 18),
-            background="white",
-            foreground="black",
-            padding=15,
-            borderwidth=0,
-            relief="flat",
-            focusthickness=0,
-            anchor="center",
-        )
-        style.map(
-            "Rounded.TButton",
-            foreground=[("disabled", "gray"), ("active", "black")],
-            background=[("disabled", "#E0E0E0"), ("active", "#CCCCCC")],
-            relief=[("pressed", "flat"), ("!pressed", "flat")],
-        )
-
+        # Grid yapılandırması (İçeriği tam ortaya ortalamak için)
+        self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(6, weight=1)
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_columnconfigure(2, weight=1)
 
-        title_label = tk.Label(
-            self,
-            text="GEOGUESSER!",
-            font=("Impact", 36, "bold"),
-            bg="#9370DB",
-            fg="white",
-            bd=0,
-            relief=tk.FLAT,
-            padx=20,
-            pady=10,
+        # --- ANA BAŞLIK (LOGO ETKİSİ) ---
+        self.title_label = ctk.CTkLabel(
+            self, text="HalonGuessr", 
+            font=("Impact", 50, "bold"),
+            fg_color=("#3B8ED0", "#1F6AA5"),
+            text_color="white",
+            corner_radius=15,
+            height=100
         )
-        title_label.grid(row=1, column=1, pady=30, sticky="ew")
+        self.title_label.grid(row=1, column=0, pady=(0, 50), padx=40, sticky="ew")
 
-        button_width = 20
+        # --- BUTON KONTEYNERI ---
+        self.menu_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.menu_frame.grid(row=2, column=0)
 
-        login_button = ttk.Button(
-            self,
-            text="LOGIN",
+        # Buton genişliği standart
+        btn_width = 250
+        btn_height = 50
+        btn_font = ("Impact", 20)
+
+        # Giriş Yap
+        self.login_btn = ctk.CTkButton(
+            self.menu_frame, text="", 
             command=lambda: controller.show_frame("LoginPage"),
-            style="Rounded.TButton",
-            width=button_width,
+            font=btn_font,
+            fg_color=("#3B8ED0", "#1F6AA5"),
+            hover_color=("#1F6AA5", "#144870"),
+            corner_radius=15, width=btn_width, height=btn_height
         )
-        login_button.grid(row=2, column=1, pady=15)
+        self.login_btn.pack(pady=10)
 
-        register_button = ttk.Button(
-            self,
-            text="REGISTER",
+        # Kayıt Ol
+        self.register_btn = ctk.CTkButton(
+            self.menu_frame, text="", 
             command=lambda: controller.show_frame("RegisterPage"),
-            style="Rounded.TButton",
-            width=button_width,
+            font=btn_font,
+            fg_color="transparent",
+            border_width=2,
+            border_color=("#3B8ED0", "#1F6AA5"),
+            text_color=("#3B8ED0", "white"),
+            hover_color=("#EBF4FC", "#2E2E2E"),
+            corner_radius=15, width=btn_width, height=btn_height
         )
-        register_button.grid(row=3, column=1, pady=15)
+        self.register_btn.pack(pady=10)
 
-        settings_button = ttk.Button(
-            self,
-            text="SETTINGS",
+        # --- YENİ: LİDERLİK TABLOSU BUTONU ---
+        self.leaderboard_btn = ctk.CTkButton(
+            self.menu_frame, text="LEADERBOARD", 
+            command=lambda: controller.show_frame("LeaderboardPage"),
+            font=btn_font,
+            fg_color="transparent",
+            border_width=2,
+            border_color=("#3B8ED0", "#1F6AA5"),
+            text_color=("#3B8ED0", "white"),
+            hover_color=("#EBF4FC", "#2E2E2E"),
+            corner_radius=15, width=btn_width, height=btn_height
+        )
+        self.leaderboard_btn.pack(pady=10)
+
+        # Ayarlar
+        self.settings_btn = ctk.CTkButton(
+            self.menu_frame, text="", 
             command=lambda: controller.show_frame("SettingsPage"),
-            style="Rounded.TButton",
-            width=button_width,
+            font=btn_font,
+            fg_color="transparent",
+            border_width=2,
+            border_color=("#3B8ED0", "#1F6AA5"),
+            text_color=("#3B8ED0", "white"),
+            hover_color=("#EBF4FC", "#2E2E2E"),
+            corner_radius=15, width=btn_width, height=btn_height
         )
-        settings_button.grid(row=4, column=1, pady=15)
+        self.settings_btn.pack(pady=10)
 
-        exit_button = ttk.Button(
-            self,
-            text="PULL THE PLUG (EXIT)",
+        # Çıkış (Kırmızı Vurgulu)
+        self.exit_btn = ctk.CTkButton(
+            self, text="", 
             command=controller.quit,
-            style="Rounded.TButton",
-            width=button_width + 5,
+            font=("Impact", 16),
+            fg_color="#CC3333",
+            hover_color="#992626",
+            corner_radius=15, width=180, height=40
         )
-        exit_button.grid(row=5, column=1, pady=40)
+        self.exit_btn.grid(row=5, column=0, pady=(60, 0))
+
+        # Metinleri yükle
+        self.update_texts()
+
+    def update_texts(self):
+        lang = self.controller.current_language
+        t = TRANSLATIONS[lang]["home"]
+        common = TRANSLATIONS[lang]["common"]
+
+        self.title_label.configure(text=t["title"])
+        self.login_btn.configure(text=t["login"])
+        self.register_btn.configure(text=t["register"])
+        self.settings_btn.configure(text=t["settings"])
+        self.exit_btn.configure(text=common["exit"])
+        # Not: Leaderboard metni çeviri dosyasında yoksa manuel yazdık, 
+        # istersen çeviri dosyasına "leaderboard": "LİDERLİK TABLOSU" ekleyebilirsin.

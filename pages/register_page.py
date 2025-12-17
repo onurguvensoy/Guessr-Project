@@ -1,99 +1,111 @@
-import tkinter as tk
-from tkinter import ttk, messagebox
-
+import customtkinter as ctk
+from tkinter import messagebox
 from database.db_manager import DatabaseManager
+from utils.translation import TRANSLATIONS
 
-
-class RegisterPage(tk.Frame):
+class RegisterPage(ctk.CTkFrame):
     def __init__(self, parent, controller):
-        super().__init__(parent, bg="#4B0082")
+        # Frame otomatik tema takibi yapar
+        super().__init__(parent)
         self.controller = controller
         self.db = DatabaseManager()
 
-        style = ttk.Style()
-        style.layout(
-            "Rounded.TButton",
-            [
-                (
-                    "Button.focus",
-                    {
-                        "children": [
-                            (
-                                "Button.padding",
-                                {
-                                    "children": [("Button.label", {"sticky": "nswe"})],
-                                    "sticky": "nswe",
-                                },
-                            )
-                        ],
-                        "sticky": "nswe",
-                    },
-                )
-            ],
-        )
-        style.configure(
-            "Rounded.TButton",
-            font=("Impact", 18),
-            background="white",
-            foreground="black",
-            padding=15,
-            borderwidth=0,
-            relief="flat",
-            focusthickness=0,
-            anchor="center",
-        )
-        style.map(
-            "Rounded.TButton",
-            foreground=[("disabled", "gray"), ("active", "black")],
-            background=[("disabled", "#E0E0E0"), ("active", "#CCCCCC")],
-            relief=[("pressed", "flat"), ("!pressed", "flat")],
-        )
+        # Grid yapılandırması (Merkezleme)
+        self.grid_columnconfigure(0, weight=1)
 
-        title = tk.Label(
-            self,
-            text="Register",
-            font=("Impact", 36, "bold"),
-            bg="#9370DB",
-            fg="white",
-            bd=0,
-            relief=tk.FLAT,
-            padx=20,
-            pady=10,
+        # --- BAŞLIK ---
+        self.title_label = ctk.CTkLabel(
+            self, text="", 
+            font=("Impact", 35, "bold"),
+            fg_color=("#3B8ED0", "#1F6AA5"),
+            text_color="white",
+            corner_radius=10
         )
-        title.pack(pady=50)
+        self.title_label.pack(pady=(40, 30), padx=20, fill="x")
 
-        tk.Label(self, text="Username:", bg="#4B0082", fg="white", font=("Impact", 14)).pack(pady=5)
-        self.username_entry = tk.Entry(self)
+        # --- GİRİŞ ALANLARI FORMU ---
+        # Kullanıcı Adı
+        self.username_label = ctk.CTkLabel(self, text="", font=("Impact", 18))
+        self.username_label.pack(pady=(10, 0))
+        self.username_entry = ctk.CTkEntry(
+            self, width=300, height=40, corner_radius=10,
+            border_color=("#3B8ED0", "#1F6AA5")
+        )
         self.username_entry.pack(pady=5)
 
-        tk.Label(self, text="Email:", bg="#4B0082", fg="white", font=("Impact", 14)).pack(pady=5)
-        self.email_entry = tk.Entry(self)
+        # Email
+        self.email_label = ctk.CTkLabel(self, text="", font=("Impact", 18))
+        self.email_label.pack(pady=(10, 0))
+        self.email_entry = ctk.CTkEntry(
+            self, width=300, height=40, corner_radius=10,
+            border_color=("#3B8ED0", "#1F6AA5")
+        )
         self.email_entry.pack(pady=5)
 
-        tk.Label(self, text="Password:", bg="#4B0082", fg="white", font=("Impact", 14)).pack(pady=5)
-        self.password_entry = tk.Entry(self, show="*")
+        # Şifre
+        self.password_label = ctk.CTkLabel(self, text="", font=("Impact", 18))
+        self.password_label.pack(pady=(10, 0))
+        self.password_entry = ctk.CTkEntry(
+            self, width=300, height=40, corner_radius=10,
+            show="*", border_color=("#3B8ED0", "#1F6AA5")
+        )
         self.password_entry.pack(pady=5)
 
-        ttk.Button(self, text="Register", style="Rounded.TButton", command=self.handle_register).pack(pady=10)
+        # --- BUTONLAR ---
+        # Kayıt Ol Butonu
+        self.register_button = ctk.CTkButton(
+            self, text="", 
+            command=self.handle_register,
+            font=("Impact", 18),
+            fg_color=("#3B8ED0", "#1F6AA5"),
+            hover_color=("#1F6AA5", "#144870"),
+            corner_radius=15, height=45, width=220
+        )
+        self.register_button.pack(pady=(30, 10))
 
-        ttk.Button(
-            self,
-            text="Back to Login",
-            style="Rounded.TButton",
+        # Giriş Sayfasına Dön Butonu
+        self.back_button = ctk.CTkButton(
+            self, text="", 
             command=lambda: controller.show_frame("LoginPage"),
-        ).pack(pady=10)
+            font=("Impact", 16),
+            fg_color="transparent", # Daha az vurgulu, modern görünüm
+            border_width=2,
+            border_color=("#3B8ED0", "#1F6AA5"),
+            text_color=("#3B8ED0", "white"),
+            hover_color=("#EBF4FC", "#2E2E2E"),
+            corner_radius=15, height=40, width=200
+        )
+        self.back_button.pack(pady=10)
+
+        # Metinleri yükle
+        self.update_texts()
 
     def handle_register(self):
         username = self.username_entry.get().strip()
         email = self.email_entry.get().strip()
         password = self.password_entry.get().strip()
 
+        lang = self.controller.current_language
+        common_txt = TRANSLATIONS[lang]["common"]
+
         if not username or not email or not password:
-            messagebox.showerror("Registration Failed", "Please fill in all fields.")
+            messagebox.showerror(common_txt["error"], "Lütfen tüm alanları doldurun." if lang == "Turkish" else "Please fill in all fields.")
             return
 
         if self.db.add_user(username, password, email):
-            messagebox.showinfo("Registration Successful", "You can now log in.")
+            messagebox.showinfo(common_txt["success"], "Kayıt başarılı! Giriş yapabilirsiniz." if lang == "Turkish" else "Registration Successful! You can now log in.")
             self.controller.show_frame("LoginPage")
         else:
-            messagebox.showerror("Registration Failed", "Username or email already exists.")
+            messagebox.showerror(common_txt["error"], "Kullanıcı adı veya email zaten mevcut." if lang == "Turkish" else "Username or email already exists.")
+
+    def update_texts(self):
+        lang = self.controller.current_language
+        t = TRANSLATIONS[lang]["register"]
+        common = TRANSLATIONS[lang]["common"]
+
+        self.title_label.configure(text=t["title"])
+        self.username_label.configure(text=t["username"])
+        self.email_label.configure(text=t["email"])
+        self.password_label.configure(text=t["password"])
+        self.register_button.configure(text=t["register_btn"])
+        self.back_button.configure(text=t["has_account"])
