@@ -4,6 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Guessr Engine - Pro Mode</title>
+
   <style>
     :root {
       --bg-dark: #1A1A1A;
@@ -13,56 +14,132 @@
       --text-dim: #AAAAAA;
     }
 
-    body { 
-      margin: 0; font-family: 'Segoe UI', sans-serif; 
-      background-color: var(--bg-dark); color: var(--text-main);
-      display: flex; height: 100vh; width: 100vw; overflow: hidden;
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
     }
 
-    /* Sol taraf: Sokak Görünümü */
-    #pano { flex-grow: 1; height: 100%; background-color: #000; }
+    /* Left side: Street View panorama */
+    #pano {
+      flex-grow: 1;
+      height: 100%;
+      background-color: #000;
+    }
 
-    /* Sağ taraf: Yan Panel */
-    #side { 
-      width: 400px; min-width: 400px; display: flex; flex-direction: column; 
-      background-color: var(--sidebar-bg); border-left: 2px solid var(--accent-blue);
+    /* Right side: Control panel */
+    #side {
+      width: 400px;
+      min-width: 400px;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--sidebar-bg);
+      border-left: 2px solid var(--accent-blue);
       box-shadow: -5px 0 15px rgba(0,0,0,0.5);
     }
 
-    /* Tahmin Haritası */
-    #map { height: 45%; border-bottom: 2px solid var(--accent-blue); }
+    /* Guess map */
+    #map {
+      height: 45%;
+      border-bottom: 2px solid var(--accent-blue);
+    }
 
-    /* Panel İçeriği */
-    #panel { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
+    /* Panel content */
+    #panel {
+      padding: 20px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
 
     .info-box {
-      background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px;
-      border: 1px solid rgba(59, 142, 208, 0.3); margin-bottom: 20px;
+      background: rgba(255,255,255,0.05);
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid rgba(59, 142, 208, 0.3);
+      margin-bottom: 20px;
     }
 
-    #timer-display { font-size: 28px; font-weight: bold; color: #FF4444; text-align: center; margin-bottom: 10px; }
-    #roundinfo { font-size: 18px; font-weight: bold; color: var(--accent-blue); margin-bottom: 5px; }
-    #status { font-size: 14px; color: var(--text-dim); }
+    #timer-display {
+      font-size: 28px;
+      font-weight: bold;
+      color: #FF4444;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    #roundinfo {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--accent-blue);
+      margin-bottom: 5px;
+    }
+
+    #status {
+      font-size: 14px;
+      color: var(--text-dim);
+    }
 
     .btn {
-      padding: 15px; border: none; border-radius: 8px; font-weight: bold;
-      cursor: pointer; transition: 0.3s; font-size: 16px; width: 100%; text-transform: uppercase;
+      padding: 15px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+      font-size: 16px;
+      width: 100%;
+      text-transform: uppercase;
     }
 
-    #submit { background-color: var(--accent-blue); color: white; }
-    #submit:hover { background-color: #3B8ED0; }
-    #submit:disabled { background-color: #444; cursor: not-allowed; opacity: 0.6; }
+    #submit {
+      background-color: var(--accent-blue);
+      color: white;
+    }
 
-    #close { background-color: transparent; border: 2px solid #CC3333; color: #CC3333; margin-top: 10px; }
-    #close:hover { background-color: #CC3333; color: white; }
+    #submit:hover {
+      background-color: #3B8ED0;
+    }
 
-    #result { font-size: 16px; margin-top: 15px; color: #4CAF50; font-weight: bold; line-height: 1.6; }
+    #submit:disabled {
+      background-color: #444;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    #close {
+      background-color: transparent;
+      border: 2px solid #CC3333;
+      color: #CC3333;
+      margin-top: 10px;
+    }
+
+    #close:hover {
+      background-color: #CC3333;
+      color: white;
+    }
+
+    #result {
+      font-size: 16px;
+      margin-top: 15px;
+      color: #4CAF50;
+      font-weight: bold;
+      line-height: 1.6;
+    }
   </style>
 </head>
+
 <body>
   <div id="pano"></div>
+
   <div id="side">
     <div id="map"></div>
+
     <div id="panel">
       <div class="info-box">
         <div id="timer-display">--</div>
@@ -70,6 +147,7 @@
         <div id="status">Total Score: 0</div>
         <div id="result"></div>
       </div>
+
       <div style="margin-top: auto;">
         <button id="submit" class="btn">Submit Guess</button>
         <button id="close" class="btn" style="display:none;">Finish Game</button>
@@ -77,69 +155,97 @@
     </div>
   </div>
 
-  <script src="https://maps.googleapis.com/maps/api/js?key=buraya api key'i yaz&libraries=geometry"></script>
-  
+  <!-- Google Maps API -->
+  <script src="https://maps.googleapis.com/maps/api/js?key= api buraya brom&libraries=geometry"></script>
+
   <script>
-    let map, pano, guessMarker = null, targetMarker = null, line = null;
-    let guessLatLng = null, currentTarget = null, timeLeft = 0, timerInterval = null;
+    let map, pano;
+    let guessMarker = null;
+    let targetMarker = null;
+    let line = null;
+
+    let guessLatLng = null;
+    let currentTarget = null;
+
+    let timeLeft = 0;
+    let timerInterval = null;
 
     async function initGame() {
-      // Python API'si yüklenene kadar bekle
-      while (!window.pywebview || !window.pywebview.api) { await new Promise(r => setTimeout(r, 100)); }
-      
+      // Wait until the Python (pywebview) API is available
+      while (!window.pywebview || !window.pywebview.api) {
+        await new Promise(r => setTimeout(r, 100));
+      }
+
       const state = await window.pywebview.api.get_state();
       currentTarget = state.target;
 
-      // Street View Kurulumu
-      pano = new google.maps.StreetViewPanorama(document.getElementById("pano"), {
-        position: state.target,
-        pov: { heading: 0, pitch: 0 },
-        zoom: 0,
-        addressControl: false,
-        clickToGo: !state.no_move,
-        linksControl: !state.no_move
-      });
+      // Initialize Street View panorama
+      pano = new google.maps.StreetViewPanorama(
+        document.getElementById("pano"), {
+          position: state.target,
+          pov: { heading: 0, pitch: 0 },
+          zoom: 0,
+          addressControl: false,
+          clickToGo: !state.no_move,
+          linksControl: !state.no_move
+        }
+      );
 
-      // Tahmin Haritası (Styles kaldırıldı, renkli)
+      // Initialize guess map
       map = new google.maps.Map(document.getElementById("map"), {
-        center: {lat: 20, lng: 0},
+        center: { lat: 20, lng: 0 },
         zoom: 1,
         disableDefaultUI: true
       });
 
-      // Haritaya tıklama olayı
+      // Handle map click for guessing
       map.addListener("click", (e) => {
         if (document.getElementById("submit").disabled) return;
+
         guessLatLng = e.latLng;
-        if (!guessMarker) guessMarker = new google.maps.Marker({ map, position: guessLatLng });
-        else guessMarker.setPosition(guessLatLng);
+
+        if (!guessMarker) {
+          guessMarker = new google.maps.Marker({
+            map,
+            position: guessLatLng
+          });
+        } else {
+          guessMarker.setPosition(guessLatLng);
+        }
       });
 
       updateUI(state);
-      
-      // Timer Ayarı
-      if (state.timer !== "No Limit") { 
-        timeLeft = parseInt(state.timer); 
-        startTimer(); 
+
+      // Initialize timer if enabled
+      if (state.timer !== "No Limit") {
+        timeLeft = parseInt(state.timer);
+        startTimer();
       }
 
       document.getElementById("submit").onclick = submitGuess;
-      document.getElementById("close").onclick = () => window.pywebview.api.close_window();
+      document.getElementById("close").onclick = () =>
+        window.pywebview.api.close_window();
     }
 
     function updateUI(state) {
-      document.getElementById("roundinfo").innerText = `Round: ${state.round}/${state.rounds_total}`;
-      document.getElementById("status").innerText = `Total Score: ${state.total_score}`;
+      document.getElementById("roundinfo").innerText =
+        `Round: ${state.round}/${state.rounds_total}`;
+      document.getElementById("status").innerText =
+        `Total Score: ${state.total_score}`;
     }
 
     function startTimer() {
       clearInterval(timerInterval);
+
       timerInterval = setInterval(() => {
-        document.getElementById("timer-display").innerText = timeLeft + "s";
-        if (timeLeft <= 0) { 
-          clearInterval(timerInterval); 
-          submitGuess(); 
+        document.getElementById("timer-display").innerText =
+          timeLeft + "s";
+
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          submitGuess();
         }
+
         timeLeft--;
       }, 1000);
     }
@@ -147,51 +253,59 @@
     async function submitGuess() {
       const submitBtn = document.getElementById("submit");
       if (submitBtn.disabled) return;
-      
-      submitBtn.disabled = true; // 3 saniyelik geri bildirim sırasında butonu kilitle
+
+      // Lock button during feedback delay
+      submitBtn.disabled = true;
       clearInterval(timerInterval);
 
       const lat = guessLatLng ? guessLatLng.lat() : 0;
       const lng = guessLatLng ? guessLatLng.lng() : 0;
 
-      // Python'a tahmini gönder ve sonucu al
+      // Send guess to Python backend
       const res = await window.pywebview.api.submit_guess(lat, lng);
-      
-      // UI'da skorları göster
-      document.getElementById("result").innerHTML = 
-        `Last Score: +${res.score}<br>Distance: ${res.distance_km.toFixed(2)} km`;
-      document.getElementById("status").innerText = `Total Score: ${res.total_score}`;
 
-      // Harita üzerinde mesafe çizgisini göster
+      // Display score feedback
+      document.getElementById("result").innerHTML =
+        `Last Score: +${res.score}<br>` +
+        `Distance: ${res.distance_km.toFixed(2)} km`;
+
+      document.getElementById("status").innerText =
+        `Total Score: ${res.total_score}`;
+
+      // Visual feedback on map
       showFeedback(lat, lng, currentTarget);
 
-      // 3 saniye sonra yeni raunda geç veya bitir
+      // Proceed after 3 seconds
       setTimeout(async () => {
         if (res.finished) {
           submitBtn.style.display = "none";
           document.getElementById("close").style.display = "block";
-          document.getElementById("result").innerHTML += "<br><b>GAME OVER!</b>";
+          document.getElementById("result").innerHTML +=
+            "<br><b>GAME OVER!</b>";
         } else {
-          // Temizlik
+          // Cleanup previous round markers
           if (line) line.setMap(null);
           if (targetMarker) targetMarker.setMap(null);
           if (guessMarker) guessMarker.setMap(null);
-          guessMarker = null; guessLatLng = null;
-          
-          // Yeni Hedefe Odaklan
+
+          guessMarker = null;
+          guessLatLng = null;
+
+          // Move to next target
           currentTarget = res.next_target;
           pano.setPosition(currentTarget);
-          map.setCenter({lat: 20, lng: 0});
+
+          map.setCenter({ lat: 20, lng: 0 });
           map.setZoom(1);
-          
+
           const state = await window.pywebview.api.get_state();
           updateUI(state);
-          
-          if (state.timer !== "No Limit") { 
-            timeLeft = parseInt(state.timer); 
-            startTimer(); 
+
+          if (state.timer !== "No Limit") {
+            timeLeft = parseInt(state.timer);
+            startTimer();
           }
-          
+
           submitBtn.disabled = false;
           document.getElementById("result").innerHTML = "";
         }
@@ -199,19 +313,26 @@
     }
 
     function showFeedback(guessLat, guessLng, target) {
-      const gPos = {lat: parseFloat(guessLat), lng: parseFloat(guessLng)};
-      const tPos = {lat: parseFloat(target.lat), lng: parseFloat(target.lng)};
+      const guessPos = {
+        lat: parseFloat(guessLat),
+        lng: parseFloat(guessLng)
+      };
 
-      // Gerçek konumu işaretle
+      const targetPos = {
+        lat: parseFloat(target.lat),
+        lng: parseFloat(target.lng)
+      };
+
+      // Mark the real location
       targetMarker = new google.maps.Marker({
-        position: tPos,
+        position: targetPos,
         map: map,
         label: "🎯"
       });
 
-      // Mesafe çizgisi (Polyline)
+      // Draw distance line
       line = new google.maps.Polyline({
-        path: [gPos, tPos],
+        path: [guessPos, targetPos],
         geodesic: true,
         strokeColor: "#1F6AA5",
         strokeOpacity: 1.0,
@@ -219,10 +340,10 @@
         map: map
       });
 
-      // Haritayı her iki noktayı kapsayacak şekilde odakla
+      // Fit map to show both points
       const bounds = new google.maps.LatLngBounds();
-      bounds.extend(gPos);
-      bounds.extend(tPos);
+      bounds.extend(guessPos);
+      bounds.extend(targetPos);
       map.fitBounds(bounds);
     }
 
