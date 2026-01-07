@@ -5,17 +5,9 @@ from dataclasses import dataclass
 from typing import Optional, Dict, Any, List
 
 def _hash_password(password: str) -> str:
-    """Güvenlik için şifreleri hashleyerek saklıyoruz."""
     return hashlib.sha256(password.encode("utf-8")).hexdigest()
 
 class DatabaseManager:
-    """
-    Gelişmiş Veritabanı Yöneticisi:
-    - Kullanıcı yönetimi
-    - Kümülatif lokasyon ağacı (Map Tree)
-    - Dinamik playlist sistemi
-    - Oyun istatistikleri ve Leaderboard
-    """
 
     def __init__(self, db_path: Optional[str] = None):
         if db_path is None:
@@ -32,7 +24,7 @@ class DatabaseManager:
 
     def _init_db(self) -> None:
         with self._connect() as conn:
-            # 1. KULLANICILAR TABLOSU
+            # 1) USERS TABLE
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS users (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,7 +34,7 @@ class DatabaseManager:
                 )
             """)
 
-            # 2. LOKASYONLAR TABLOSU (Kümülatif Map Ağacı)
+            # 2) LOCATIONS TABLE (global pool / "map tree")
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS locations (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,7 +49,7 @@ class DatabaseManager:
                 )
             """)
 
-            # 3. PLAYLISTLER TABLOSU
+            # 3) PLAYLISTS TABLE
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS playlists (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -66,7 +58,7 @@ class DatabaseManager:
                 )
             """)
 
-            # 4. OYUN OTURUMLARI
+            # 4) GAME SESSIONS
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS game_sessions (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -79,7 +71,7 @@ class DatabaseManager:
                 )
             """)
 
-            # 5. OYUN RAUNTLARI
+            # 5) GAME ROUNDS
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS game_rounds (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -95,12 +87,11 @@ class DatabaseManager:
                 )
             """)
 
-            # Varsayılan verileri yükle
+            # Seed default data (idempotent)
             self._seed_initial_data(conn)
             conn.commit()
 
     def _seed_initial_data(self, conn):
-        """Eksik olan metot: Başlangıç playlistlerini ekler."""
         playlists = [
             ("The Grand Tour", "A random selection from every corner of the world."),
             ("Capital Cities", "Only capital cities from the map tree."),
@@ -111,7 +102,7 @@ class DatabaseManager:
         ]
         conn.executemany("INSERT OR IGNORE INTO playlists (name, description) VALUES (?, ?)", playlists)
 
-    # -------------------- KULLANICI İŞLEMLERİ --------------------
+    # -------------------- USER OPERATIONS --------------------
 
     def add_user(self, username, password, email) -> bool:
         try:
@@ -136,10 +127,9 @@ class DatabaseManager:
             return True
         except sqlite3.IntegrityError: return False
 
-    # -------------------- MAP AĞACI VE PLAYLIST İŞLEMLERİ --------------------
+    # -------------------- LOCATION POOL & PLAYLIST OPERATIONS --------------------
 
     def add_location(self, lat, lng, continent, country, is_capital, user_id) -> bool:
-        """Kullanıcının kümülatif ağaca yeni koordinat eklemesini sağlar."""
         try:
             with self._connect() as conn:
                 conn.execute("""
@@ -158,7 +148,6 @@ class DatabaseManager:
             return [row["name"] for row in rows]
 
     def get_locations_for_playlist(self, playlist_name: str) -> list:
-        """Playlist seçimine göre veritabanından filtreleme yapar."""
         query = "SELECT lat, lng FROM locations"
         params = []
 
@@ -178,15 +167,14 @@ class DatabaseManager:
         
         with self._connect() as conn:
             rows = conn.execute(query, params).fetchall()
-            # Eğer seçilen kategori boşsa, oyunun çökmemesi için tüm havuzu döner
+            # If the selected filter returns no rows, fall back to the full pool to keep the game runnable
             if not rows:
                 rows = conn.execute("SELECT lat, lng FROM locations").fetchall()
             return [(row["lat"], row["lng"]) for row in rows]
 
-    # -------------------- OYUN İSTATİSTİKLERİ --------------------
+    # -------------------- GAME STATISTICS --------------------
 
     def get_leaderboard(self, limit=10) -> List[Dict]:
-        """Tüm zamanların en iyi skorlarını getirir."""
         with self._connect() as conn:
             rows = conn.execute("""
                 SELECT u.username, s.total_score, s.playlist_name, s.ended_at

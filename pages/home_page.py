@@ -15,7 +15,7 @@ class HomePage(ctk.CTkFrame):
         # MAIN
         self.title_label = ctk.CTkLabel(
             self,
-            text="HalonGuessr",
+            text="Guess the Location",
             font=("Impact", 50, "bold"),
             fg_color=("#3B8ED0", "#1F6AA5"),
             text_color="white",
