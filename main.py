@@ -22,7 +22,7 @@ class GeoGuessrApp(ctk.CTk):
         self.title("Guess the Location")
         self.geometry("900x700")
 
-        # --- CENTRAL APP STATE ---
+        
         self.current_user = None
         self.current_language = "English"  # Default language
         
@@ -30,7 +30,7 @@ class GeoGuessrApp(ctk.CTk):
         self.sound_manager = SoundManager()
         self.sound_manager.play_bg_music()
 
-        # --- MAIN CONTAINER ---
+        # MAIN CONTAINER
         self.container = ctk.CTkFrame(self)
         self.container.pack(side="top", fill="both", expand=True)
         self.container.grid_rowconfigure(0, weight=1)
@@ -68,7 +68,6 @@ class GeoGuessrApp(ctk.CTk):
         self.destroy()
 
 if __name__ == "__main__":
-    # Make multiprocessing safe on Windows/macOS when packaged/frozen
     multiprocessing.freeze_support()
 
     app = GeoGuessrApp()

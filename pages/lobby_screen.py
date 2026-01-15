@@ -80,6 +80,14 @@ class LobbyScreen(ctk.CTkFrame):
         )
         self.create_btn.pack(pady=5, padx=40, fill="x")
 
+        self.profile_btn = ctk.CTkButton(
+            self,
+            text="Profile Page",
+            command=lambda: controller.show_frame("ProfilePage"),
+            fg_color="#1F6AA5",
+        )
+        self.profile_btn.pack(pady=5, padx=40, fill="x")
+
         self.back_btn = ctk.CTkButton(
             self, text="BACK", command=lambda: controller.show_frame("HomePage"), fg_color="gray"
         )

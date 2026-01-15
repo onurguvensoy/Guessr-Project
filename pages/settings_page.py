@@ -9,7 +9,7 @@ class SettingsPage(ctk.CTkFrame):
 
         self.grid_columnconfigure(0, weight=1)
 
-        # --- HEADER ---
+        # HEADER
         self.title_label = ctk.CTkLabel(
             self,
             text="",
@@ -20,7 +20,7 @@ class SettingsPage(ctk.CTkFrame):
         )
         self.title_label.pack(pady=(40, 20), padx=20, fill="x")
 
-        # --- SETTINGS FORM ---
+        # SETTINGS FORM
         self.form_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.form_frame.pack(pady=10, padx=50, fill="x")
 

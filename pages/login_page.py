@@ -95,9 +95,6 @@ class LoginPage(ctk.CTkFrame):
         self.update_texts()
 
     def handle_login(self) -> None:
-        """
-        Validate the form and attempt to authenticate the user via DatabaseManager.
-        """
         username = self.username_entry.get().strip()
         password = self.password_entry.get().strip()
 
@@ -121,9 +118,6 @@ class LoginPage(ctk.CTkFrame):
             messagebox.showerror(common["error"], t.get("invalid_creds", "Invalid username or password."))
 
     def update_texts(self) -> None:
-        """
-        Refresh visible strings according to the current language setting.
-        """
         lang = self.controller.current_language
         t = TRANSLATIONS[lang]["login"]
         common = TRANSLATIONS[lang]["common"]

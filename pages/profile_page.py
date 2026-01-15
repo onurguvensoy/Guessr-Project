@@ -12,7 +12,7 @@ class ProfilePage(ctk.CTkFrame):
 
         self.grid_columnconfigure(0, weight=1)
 
-        # --- HEADER ---
+        # HEADER
         self.title_label = ctk.CTkLabel(
             self,
             text="",
@@ -23,7 +23,7 @@ class ProfilePage(ctk.CTkFrame):
         )
         self.title_label.pack(pady=(30, 20), padx=20, fill="x")
 
-        # --- INPUT FORM ---
+        # INPUT FORM
         self.form_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.form_frame.pack(pady=10)
 
@@ -49,7 +49,7 @@ class ProfilePage(ctk.CTkFrame):
         )
         self.email_entry.pack(pady=5)
 
-        # --- STATS CARD ---
+        # STATS CARD
         self.stats_frame = ctk.CTkFrame(
             self,
             fg_color=("#EBF4FC", "#1A1A1A"),
@@ -67,7 +67,7 @@ class ProfilePage(ctk.CTkFrame):
         )
         self.stats_label.pack(pady=15)
 
-        # --- ACTION BUTTONS ---
+        # ACTION BUTTONS
         self.save_btn = ctk.CTkButton(
             self,
             text="",

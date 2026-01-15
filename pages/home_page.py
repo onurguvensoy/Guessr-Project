@@ -15,8 +15,8 @@ class HomePage(ctk.CTkFrame):
         # MAIN
         self.title_label = ctk.CTkLabel(
             self,
-            text="Guess the Location",
-            font=("Impact", 50, "bold"),
+            text="Guessr Desktop",
+            font=("Impact", 60, "bold"),
             fg_color=("#3B8ED0", "#1F6AA5"),
             text_color="white",
             corner_radius=15,
@@ -46,7 +46,7 @@ class HomePage(ctk.CTkFrame):
             height=btn_height,
         )
         self.login_btn.pack(pady=10)
-
+        
         # Register
         self.register_btn = ctk.CTkButton(
             self.menu_frame,
