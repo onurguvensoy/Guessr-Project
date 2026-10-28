@@ -18,3 +18,7 @@ database/*.db
 
 # logs
 *.log
+# Secrets / local env
+.env
+.env.*
+**/.env
